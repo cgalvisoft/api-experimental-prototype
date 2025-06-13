@@ -136,7 +136,6 @@ docker run -p 8000:8000 experimental-api:latest
     ```bash
     kubectl apply -f k8s/deployment.yaml -n experimental-api
     kubectl apply -f k8s/service.yaml -n experimental-api
-    kubectl apply -f k8s/configmap.yaml -n experimental-api
     ```
 
 3.  Verifica el despliegue:
@@ -234,8 +233,6 @@ docker run -p 8000:8000 experimental-api:latest
 
 **Prerrequisitos:**
 * Cuenta de Azure DevOps.
-* Azure Container Registry.
-* Conexión de servicio a tus recursos de Azure.
 
 **Configurar el Pipeline:**
 
@@ -243,8 +240,9 @@ docker run -p 8000:8000 experimental-api:latest
 2.  Crea un nuevo pipeline usando el archivo existente `azure-pipelines.yml`.
 3.  Configura las siguientes variables:
     * `pythonVersion`: Versión de Python a usar (ej., `'3.12'`).
-    * `image_repository`: Nombre del repositorio de tu imagen de contenedor.
-    * `acrName`: Nombre de tu Azure Container Registry.
+    * `image_tag`: Nombre del tag de tu imagen de contenedor obtenido del BuildID.
+    * `image_name`: Nombre de la imagen con su tag de contenedor.
+
 4.  Ejecuta el pipeline.
 
 El pipeline realizará las siguientes acciones:

@@ -5,16 +5,15 @@ trigger:
 
 variables:
   pythonVersion: '3.12'
-  image_repository: 'experimental-api'
   image_tag: '$(Build.BuildId)'
-  image_name: '$(image_repository):$(image_tag)'
+  image_name: 'experimental-api:$(image_tag)'
 
 stages:
-- stage: Validate
-  displayName: 'Validate'
+- stage: Validate_Code
+  displayName: 'Code Validation'
   jobs:
   - job: Lint_and_Test
-    displayName: 'Lint and Test'
+    displayName: 'Validate and Test Code'
     pool:
       vmImage: 'ubuntu-latest'
     steps:
@@ -33,57 +32,49 @@ stages:
         pytest tests/ --cov=app --cov-report=xml --cov-report=html --junitxml=junit/test-results.xml
       displayName: 'Run unit tests with coverage'
 
-    # - task: PublishTestResults@2
-    #   inputs:
-    #     testResultsFormat: 'JUnit'
-    #     testResultsFiles: '**/test-results.xml'
-    #   displayName: 'Publish test results'
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'JUnit'
+        testResultsFiles: '**/test-results.xml'
+      displayName: 'Publish test results'
 
-    # - task: PublishCodeCoverageResults@1
-    #   inputs:
-    #     codeCoverageTool: Cobertura
-    #     summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
-    #     reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
-    #   displayName: 'Publish coverage report'
+    - task: PublishCodeCoverageResults@1
+      inputs:
+        codeCoverageTool: Cobertura
+        summaryFileLocation: '$(System.DefaultWorkingDirectory)/**/coverage.xml'
+        reportDirectory: '$(System.DefaultWorkingDirectory)/**/htmlcov'
+      displayName: 'Publish coverage report'
 
-    # - script: |
-    #     bandit -r app/ -f html -o bandit-results.html
-    #   displayName: 'Run SAST with Bandit'
-    #   continueOnError: true
+    - script: |
+        bandit -r app/ -f html -o bandit-results.html
+      displayName: 'Run SAST with Bandit'
+      continueOnError: true
 
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     pathToPublish: 'bandit-results.html'
-    #     artifactName: 'sast-security-report'
-    #   displayName: 'Publish SAST results'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'bandit-results.html'
+        artifactName: 'sast-security-report'
+      displayName: 'Publish SAST results'
 
-    # - script: |
-    #     wget https://github.com/google/osv-scanner/releases/download/v1.3.6/osv-scanner_1.3.6_linux_amd64
-    #     mv osv-scanner_1.3.6_linux_amd64 osv-scanner
-    #     chmod +x osv-scanner
-    #     sudo mv osv-scanner /usr/local/bin/
-    #     osv-scanner --lockfile requirements.txt --json > osv-results.json 
-    #   displayName: 'Run SCA with OSV Scanner'
-    #   continueOnError: true
+    - script: |
+        wget https://github.com/google/osv-scanner/releases/download/v1.3.6/osv-scanner_1.3.6_linux_amd64
+        mv osv-scanner_1.3.6_linux_amd64 osv-scanner
+        chmod +x osv-scanner
+        sudo mv osv-scanner /usr/local/bin/
+        osv-scanner --lockfile requirements.txt --json > osv-scanner-results.json 
+      displayName: 'Run SCA with OSV Scanner'
+      continueOnError: true
 
-    # - task: PublishBuildArtifacts@1
-    #   inputs:
-    #     pathToPublish: 'osv-results.json'
-    #     artifactName: 'sca-security-report'
-    #   displayName: 'Publish SCA results'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'osv-scanner-results.json'
+        artifactName: 'sca-security-report'
+      displayName: 'Publish SCA results'
 
-    # - script: |
-    #     if [ -f osv-results.json ]; then
-    #       python -c "import json; f=open('osv-results.json'); data=json.load(f); f.close(); exit(1 if any(v['severity'] == 'CRITICAL' for v in data.get('results', [])) else 0)"
-    #     else
-    #       echo "osv-results.json not found, skipping vulnerability check"
-    #     fi
-    #   displayName: 'Fail if critical vulnerabilities found'
-    #   continueOnError: true
 
 - stage: Build_Image
-  displayName: 'Build Image'
-  dependsOn: Validate
+  displayName: 'Build and Save Image'
+  dependsOn: Validate_Code
   jobs:
   - job: Build_Docker_Image
     displayName: 'Build Docker Image'
@@ -105,107 +96,103 @@ stages:
         artifactName: 'docker-image'
       displayName: 'Publish Docker image artifact'
 
-# - stage: Scan_Image
-#   displayName: 'Scan Image'
-#   dependsOn: Build_Image
-#   jobs:
-#   - job: Container_Scan
-#     displayName: 'Container Scan'
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     - task: DownloadBuildArtifacts@0
-#       inputs:
-#         buildType: 'current'
-#         downloadType: 'single'
-#         artifactName: 'docker-image'
-#         downloadPath: '$(System.ArtifactsDirectory)'
-#       displayName: 'Download Docker image artifact'
+
+- stage: Scan_Image
+  displayName: 'Scan Image'
+  dependsOn: Build_Image
+  jobs:
+  - job: Image_Scan
+    displayName: 'Image Security Scan'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'docker-image'
+        downloadPath: '$(System.ArtifactsDirectory)'
+      displayName: 'Download Docker image artifact'
       
-#     - script: |
-#         docker load -i $(System.ArtifactsDirectory)/docker-image/image.tar
-#         docker image ls
-#       displayName: 'Load Docker image'
+    - script: |
+        docker load -i $(System.ArtifactsDirectory)/docker-image/image.tar
+        docker image ls
+      displayName: 'Load Docker image'
       
-#     - bash: |
-#         sudo apt-get install rpm
-#         wget https://github.com/aquasecurity/trivy/releases/download/v0.58.0/trivy_0.58.0_Linux-64bit.deb
-#         sudo dpkg -i *.deb
-#         trivy -v 
-#       displayName: 'Download and install Trivy'
+    - bash: |
+        sudo apt-get install rpm
+        wget https://github.com/aquasecurity/trivy/releases/download/v0.58.0/trivy_0.58.0_Linux-64bit.deb
+        sudo dpkg -i *.deb
+        trivy -v 
+      displayName: 'Download and install Trivy'
     
-#     - bash: |
-#         mkdir trivy_templates && cd trivy_templates
-#         wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
-#         cd ..
-#       displayName: 'Install html template'
+    - bash: |
+        mkdir trivy_templates && cd trivy_templates
+        wget https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl
+        cd ..
+      displayName: 'Install html template'
             
-#     - script: |
-#         trivy image --severity HIGH,CRITICAL,MEDIUM --format template --template "@trivy_templates/html.tpl" -o trivy-results.html $(image_name)
-#         ls -ltr
-#       displayName: 'Scan container image with Trivy'
-#       continueOnError: true
+    - script: |
+        trivy image --severity HIGH,CRITICAL,MEDIUM --format template --template "@trivy_templates/html.tpl" -o trivy-results.html $(image_name)
+        ls -ltr
+      displayName: 'Scan container image with Trivy'
+      continueOnError: true
 
-#     - task: PublishBuildArtifacts@1
-#       inputs:
-#         pathToPublish: 'trivy-results.html'
-#         artifactName: 'trivy-security-report'
-#       displayName: 'Publish Trivy HTML results'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'trivy-results.html'
+        artifactName: 'trivy-security-report'
+      displayName: 'Publish Trivy results'
 
-# - stage: DAST
-#   displayName: 'Dynamic Application Security Testing'
-#   dependsOn: Build_Image
-#   #dependsOn: Scan_Image
-#   jobs:
-#   - job: Deploy_For_Testing
-#     displayName: 'Deploy for Testing'
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     - task: DownloadBuildArtifacts@0
-#       inputs:
-#         buildType: 'current'
-#         downloadType: 'single'
-#         artifactName: 'docker-image'
-#         downloadPath: '$(System.ArtifactsDirectory)'
-#       displayName: 'Download Docker image artifact'
+- stage: DAST_Scan
+  displayName: 'Dynamic Application Security Testing'
+  dependsOn: Scan_Image
+  jobs:
+  - job: Deploy_For_Testing
+    displayName: 'DAST Security Testing'
+    pool:
+      vmImage: 'ubuntu-latest'
+    steps:
+    - task: DownloadBuildArtifacts@0
+      inputs:
+        buildType: 'current'
+        downloadType: 'single'
+        artifactName: 'docker-image'
+        downloadPath: '$(System.ArtifactsDirectory)'
+      displayName: 'Download Docker image artifact'
       
-#     - script: |
-#         docker load -i $(System.ArtifactsDirectory)/docker-image/image.tar
-#         docker run -d --name api-container -p 8000:8000 $(image_name)
-#         sleep 10  # Wait for container to start
-#         curl http://localhost:8000/health || echo "API not responding"
-#       displayName: 'Start API container for testing'
+    - script: |
+        docker load -i $(System.ArtifactsDirectory)/docker-image/image.tar
+        docker run -d --name api-container -p 8000:8000 $(image_name)
+        sleep 10  # Wait for container to start
+        curl http://localhost:8000/health || echo "API not responding"
+      displayName: 'Start API container for testing'
       
-#   - job: ZAP_Scan
-#     displayName: 'OWASP ZAP Scan'
-#     dependsOn: Deploy_For_Testing
-#     pool:
-#       vmImage: 'ubuntu-latest'
-#     steps:
-#     - script: |
+    - script: |
 
-#         docker run -v $(pwd):/zap/wrk/:rw --network="host" zaproxy/zap-stable zap-api-scan.py -t ./openapi.json - f openapi -r scan-report.html
-
-#         docker run --rm --network="host" -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
-#           -t ./openapi.json \
-#           -f openapi \
-#           -r report_html \
-#           -z "-config replacer.full_list(0).description=auth1 \
-#               -config replacer.full_list(0).enabled=true \
-#               -config replacer.full_list(0).matchtype=REQ_HEADER \
-#               -config replacer.full_list(0).matchstr=Host \
-#               -config replacer.full_list(0).regex=false \
-#               -config replacer.full_list(0).replacement=localhost:8000" \
-#         ls -ltr
-#         echo "html"
-#         find . -name "*html*"
-#       displayName: 'Run OWASP ZAP API Scan'
-#       continueOnError: true
+        # docker run -v $(pwd):/zap/wrk/:rw --network="host" zaproxy/zap-stable zap-api-scan.py -t ./openapi.json - f openapi -r scan-report.html
+        mkdir -p $(pwd)/zap-output
+        chmod 777 $(pwd)/zap-output
+        docker run --rm --network="host" -v $(pwd):/zap/wrk/:rw -t ghcr.io/zaproxy/zaproxy:stable zap-api-scan.py \
+          -t ./openapi.json \
+          -f openapi \
+          -r zap-output/dast-report.html \
+          -z "-config replacer.full_list(0).description=auth1 \
+              -config replacer.full_list(0).enabled=true \
+              -config replacer.full_list(0).matchtype=REQ_HEADER \
+              -config replacer.full_list(0).matchstr=Host \
+              -config replacer.full_list(0).regex=false \
+              -config replacer.full_list(0).replacement=localhost:8000" \
+        ls -ltr
+        ls -la zap-output/
+        echo "html"
+        find . -name "*html*"
+      displayName: 'Run OWASP ZAP API Scan'
+      continueOnError: true
       
-#     - task: PublishBuildArtifacts@1
-#       inputs:
-#         pathToPublish: 'zap-report.html'
-#         artifactName: 'dast-security-report'
-#       displayName: 'Publish ZAP Scan Results'
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: 'zap-output/dast-report.html'
+        artifactName: 'dast-security-report'
+      displayName: 'Publish ZAP Scan Results'
       
