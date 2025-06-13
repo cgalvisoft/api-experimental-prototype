@@ -19,6 +19,10 @@ Este proyecto implementa una API simple de lista de tareas (To-Do List) con las 
 
 ---
 
+## Diagrama de arquitectura DevSecOps
+
+![alt text](image.png)
+
 ## Estructura del Repositorio
 
 ```
@@ -335,3 +339,5 @@ A continuación, se detallan las decisiones clave sobre la tecnología y las her
 
 * **Monitoreo y Observabilidad: Prometheus y Grafana**
     * **Justificación:** Se incorpora una pila de monitoreo con Prometheus para la recolección de métricas y Grafana para su visualización. Estas herramientas son estándares de facto en la industria y son cruciales para construir una arquitectura con alta observabilidad, orientada a la operación y al mantenimiento proactivo.
+
+    
