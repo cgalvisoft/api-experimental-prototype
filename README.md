@@ -1,320 +1,308 @@
-Experimental API Demo Project
-A production-ready REST API demo project showcasing DevSecOps best practices, including CI/CD, containerization, security scanning, and GitOps deployment.
+# Proyecto de Demostración de API Experimental
 
-Project Overview
-This project implements a simple To-Do List API with the following features:
+Un proyecto de demostración de una API REST lista para producción que muestra las mejores prácticas de DevSecOps, incluyendo CI/CD, contenedorización, escaneo de seguridad y despliegue con GitOps.
 
-FastAPI-based REST API with CRUD operations
+---
 
-Comprehensive test suite with high code coverage
+## Descripción del Proyecto
 
-Structured JSON logging
+Este proyecto implementa una API simple de lista de tareas (To-Do List) con las siguientes características:
 
-Prometheus metrics for observability
+* API REST basada en FastAPI con operaciones CRUD.
+* Suite de pruebas completa con alta cobertura de código.
+* Registro de JSON estructurado.
+* Métricas de Prometheus para observabilidad.
+* Construcción de Docker en múltiples etapas con las mejores prácticas de seguridad.
+* Pipeline de CI/CD en Azure DevOps con escaneo de seguridad.
+* Manifiestos de despliegue de Kubernetes.
+* Estrategia de despliegue GitOps con ArgoCD.
 
-Multi-stage Docker build with security best practices
+---
 
-Azure DevOps CI/CD pipeline with security scanning
+## Estructura del Repositorio
 
-Kubernetes deployment manifests
-
-GitOps deployment strategy with ArgoCD
-
-Repository Structure
+```
 api-experimental-prototype/
-├── app/                    # API application code
+├── app/                  # Código de la aplicación de la API
 │   ├── __init__.py
-│   ├── main.py             # FastAPI application entry point
-│   └── models.py           # Data models             
-├── tests/                  # Test suite
-├── k8s/                    # Kubernetes manifests
+│   ├── main.py           # Punto de entrada de la aplicación FastAPI
+│   └── models.py         # Modelos de datos
+├── tests/                # Suite de pruebas
+├── k8s/                  # Manifiestos de Kubernetes
 │   ├── deployment.yaml
 │   ├── service.yaml
-│   └── monitoring/         # Monitoring configuration
+│   └── monitoring/       # Configuración de monitoreo
 │       ├── prometheus.yaml
 │       ├── prometheus-deployment.yaml
 │       ├── grafana-deployment.yaml
 │       └── api-dashboard.json
-├── argocd/                 # ArgoCD configuration
+├── argocd/               # Configuración de ArgoCD
 │   └── application.yaml
-├── Dockerfile              # Multi-stage Docker build
-├── requirements.txt        # Python dependencies
-├── openapi.json            # API specification
-└── azure-pipelines.yml     # CI/CD pipeline configuration
+├── Dockerfile            # Construcción de Docker en múltiples etapas
+├── requirements.txt      # Dependencias de Python
+├── openapi.json          # Especificación de la API
+└── azure-pipelines.yml   # Configuración del pipeline de CI/CD
+```
 
+---
 
-Copy
-API Endpoints
-POST /tasks: Create a new task
+## Endpoints de la API
 
-GET /tasks: List all tasks
+| Método | Ruta | Descripción |
+| --- | --- | --- |
+| `POST` | `/tasks` | Crea una nueva tarea. |
+| `GET` | `/tasks` | Lista todas las tareas. |
+| `GET` | `/tasks/{task_id}` | Obtiene una tarea específica. |
+| `PUT` | `/tasks/{task_id}` | Actualiza una tarea. |
+| `DELETE` | `/tasks/{task_id}` | Elimina una tarea. |
+| `GET` | `/health` | Endpoint de verificación de estado. |
+| `GET` | `/metrics` | Endpoint de métricas de Prometheus. |
 
-GET /tasks/{task_id}: Get a specific task
+---
 
-PUT /tasks/{task_id}: Update a task
+## Instrucciones de Despliegue
 
-DELETE /tasks/{task_id}: Delete a task
+### 1. Desarrollo Local
 
-GET /health: Health check endpoint
+**Prerrequisitos:**
+* Python 3.11+
+* Docker
 
-GET /metrics: Prometheus metrics endpoint
+**Configuración:**
 
-Deployment Instructions
-1. Local Development
-Prerequisites
-Python 3.11+
+1.  Clona el repositorio:
+    ```bash
+    git clone https://github.com/yourusername/api-experimental-prototype.git
+    cd api-experimental-prototype
+    ```
 
-Docker
+2.  Crea un entorno virtual e instala las dependencias:
+    ```bash
+    python -m venv venv
+    source venv/bin/activate  # En Windows: venv\Scripts\activate
+    pip install -r requirements.txt
+    ```
 
-Setup
-Clone the repository:
+3.  Ejecuta la aplicación:
+    ```bash
+    uvicorn app.main:app --reload
+    ```
+    Accede a la documentación de la API en `http://localhost:8000/docs`.
 
-git clone https://github.com/yourusername/api-experimental-prototype.git
-cd api-experimental-prototype
-
-Copy
-bash
-Create a virtual environment and install dependencies:
-
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-pip install -r requirements.txt
-
-Copy
-bash
-Run the application:
-
-uvicorn app.main:app --reload
-
-Copy
-bash
-Access the API documentation at http://localhost:8000/docs
-
-Running Tests
+**Ejecutando Pruebas:**
+```bash
 pytest tests/ --cov=app
+```
 
-Copy
-bash
-2. Docker Deployment
-Build and Run Locally
+### 2. Despliegue con Docker
+
+**Construir y Ejecutar Localmente:**
+```bash
 docker build -t experimental-api:latest .
 docker run -p 8000:8000 experimental-api:latest
-
-Copy
-bash
-Push to Container Registry
-# For Docker Hub
-docker tag experimental-api:latest yourusername/experimental-api:latest
-docker push yourusername/experimental-api:latest
-
-# For Azure Container Registry
-az acr login --name yourregistry
-docker tag experimental-api:latest yourregistry.azurecr.io/experimental-api:latest
-docker push yourregistry.azurecr.io/experimental-api:latest
-
-Copy
-bash
-3. Kubernetes Deployment (Manual)
-Prerequisites
-Kubernetes cluster (Minikube, AKS, EKS, etc.)
-
-kubectl configured to access your cluster
-
-Deploy the API
-# Create namespace
-kubectl create namespace experimental-api
-
-# Apply Kubernetes manifests
-kubectl apply -f k8s/deployment.yaml -n experimental-api
-kubectl apply -f k8s/service.yaml -n experimental-api
-kubectl apply -f k8s/configmap.yaml -n experimental-api
-
-# Verify deployment
-kubectl get pods -n experimental-api
-kubectl get svc -n experimental-api
-
-# Access the API (port-forward)
-kubectl port-forward svc/experimental-api 8000:80 -n experimental-api
-
-Copy
-bash
-4. Monitoring Setup
-Prerequisites
-Kubernetes cluster with Prometheus and Grafana
-
-Deploy Monitoring Stack
-# Create monitoring namespace
-kubectl create namespace monitoring
-
-# Deploy Prometheus
-kubectl apply -f monitoring/prometheus.yaml -n monitoring
-kubectl apply -f monitoring/prometheus-deployment.yaml -n monitoring
-
-# Deploy Grafana
-kubectl apply -f monitoring/grafana-deployment.yaml -n monitoring
-
-# Wait for Grafana to be ready
-kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=120s
-
-# Configure Prometheus as data source in Grafana
-kubectl exec -it $(kubectl get pods -n monitoring -l app=grafana -o jsonpath='{.items[0].metadata.name}') -n monitoring -- \
-  curl -s -X POST -H "Content-Type: application/json" -d '{"name":"prometheus","type":"prometheus","url":"http://prometheus:9090","access":"proxy","isDefault":true}' \
-  http://admin:admin@localhost:3000/api/datasources
-
-# Import dashboard
-kubectl cp monitoring/api-dashboard.json monitoring/$(kubectl get pods -n monitoring -l app=grafana -o jsonpath='{.items[0].metadata.name}'):/tmp/dashboard.json
-kubectl exec -it $(kubectl get pods -n monitoring -l app=grafana -o jsonpath='{.items[0].metadata.name}') -n monitoring -- \
-  curl -s -X POST -H "Content-Type: application/json" -d @/tmp/dashboard.json \
-  http://admin:admin@localhost:3000/api/dashboards/db
-
-# Access Grafana
-kubectl port-forward svc/grafana 3000:3000 -n monitoring
-
-
-Copy
-bash
-5. GitOps Deployment with ArgoCD
-Prerequisites
-Kubernetes cluster
-
-Git repository with your application code and Kubernetes manifests
-
-Install ArgoCD
-# Create ArgoCD namespace
-kubectl create namespace argocd
-
-# Install ArgoCD
-kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-# Wait for ArgoCD to be ready
-kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
-
-# Access ArgoCD UI
-kubectl port-forward svc/argocd-server -n argocd 8080:443
-
-# Get initial admin password
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-
-Copy
-bash
-Deploy Application with ArgoCD
-# Apply ArgoCD application manifest
-kubectl apply -f argocd/application.yaml
-
-# Verify application status
-kubectl get applications -n argocd
-
-Copy
-bash
-Using ArgoCD UI
-Access the ArgoCD UI at https://localhost:8080
-
-Login with username admin and the password retrieved earlier
-
-You should see your application in the dashboard
-
-Click on the application to view deployment details
-
-Use the "Sync" button to manually trigger a deployment if needed
-
-6. CI/CD Pipeline Setup (Azure DevOps)
-Prerequisites
-Azure DevOps account
-
-Azure Container Registry
-
-Service connection to your Azure resources
-
-Configure Pipeline
-Import your repository into Azure DevOps
-
-Create a new pipeline using the existing azure-pipelines.yml file
-
-Configure the following variables:
-
-pythonVersion: Python version to use (e.g., '3.12')
-
-image_repository: Name of your container image repository
-
-acrName: Name of your Azure Container Registry
-
-Run the pipeline
-
-The pipeline will:
-
-Validate code with tests and security scans
-
-Build and push the Docker image
-
-Scan the container image for vulnerabilities
-
-Run DAST security testing
-
-Update the Kubernetes manifests with the new image tag
-
-Commit the changes to trigger ArgoCD deployment
-
-Security Features
-SAST scanning with Bandit
-
-SCA scanning with OSV Scanner
-
-Container scanning with Trivy
-
-DAST scanning with OWASP ZAP
-
-Non-root user in Docker container
-
-Security context in Kubernetes deployment
-
-Resource limits in Kubernetes deployment
-
-Security headers for web vulnerabilities
-
-Observability
-Structured JSON logging
-
-Prometheus metrics
-
-Health check endpoint
-
-Kubernetes liveness and readiness probes
-
-Grafana dashboards for visualization
-
-Troubleshooting
-Common Issues
-API not accessible after deployment
-
-Check pod status: kubectl get pods -n experimental-api
-
-Check logs: kubectl logs -l app=experimental-api -n experimental-api
-
-Verify service: kubectl get svc -n experimental-api
-
-ArgoCD not syncing
-
-Check application status: kubectl get applications -n argocd
-
-View detailed status: kubectl describe application experimental-api -n argocd
-
-Check ArgoCD logs: kubectl logs -l app.kubernetes.io/name=argocd-server -n argocd
-
-Prometheus not collecting metrics
-
-Verify target configuration: kubectl get configmap prometheus-config -n monitoring -o yaml
-
-Check if API is exposing metrics: curl http://localhost:8000/metrics
-
-Ensure service has correct annotations: prometheus.io/scrape: "true"
-
-Contributing
-Fork the repository
-
-Create a feature branch: git checkout -b feature/your-feature
-
-Commit your changes: git commit -am 'Add your feature'
-
-Push to the branch: git push origin feature/your-feature
-
-Submit a pull request
+```
+
+**Subir a un Registro de Contenedores:**
+
+* **Para Docker Hub:**
+    ```bash
+    docker tag experimental-api:latest tuusuario/experimental-api:latest
+    docker push tuusuario/experimental-api:latest
+    ```
+
+* **Para Azure Container Registry:**
+    ```bash
+    az acr login --name turegistro
+    docker tag experimental-api:latest turegistro.azurecr.io/experimental-api:latest
+    docker push turegistro.azurecr.io/experimental-api:latest
+    ```
+
+### 3. Despliegue en Kubernetes (Manual)
+
+**Prerrequisitos:**
+* Clúster de Kubernetes (Minikube, AKS, EKS, etc.).
+* `kubectl` configurado para acceder a tu clúster.
+
+**Desplegar la API:**
+
+1.  Crea el namespace:
+    ```bash
+    kubectl create namespace experimental-api
+    ```
+
+2.  Aplica los manifiestos de Kubernetes:
+    ```bash
+    kubectl apply -f k8s/deployment.yaml -n experimental-api
+    kubectl apply -f k8s/service.yaml -n experimental-api
+    kubectl apply -f k8s/configmap.yaml -n experimental-api
+    ```
+
+3.  Verifica el despliegue:
+    ```bash
+    kubectl get pods -n experimental-api
+    kubectl get svc -n experimental-api
+    ```
+
+4.  Accede a la API (reenvío de puertos):
+    ```bash
+    kubectl port-forward svc/experimental-api 8000:80 -n experimental-api
+    ```
+
+### 4. Configuración de Monitoreo
+
+**Prerrequisitos:**
+* Clúster de Kubernetes con Prometheus y Grafana.
+
+**Desplegar el Stack de Monitoreo:**
+
+1.  Crea el namespace de monitoreo:
+    ```bash
+    kubectl create namespace monitoring
+    ```
+2.  Despliega Prometheus:
+    ```bash
+    kubectl apply -f k8s/monitoring/prometheus.yaml -n monitoring
+    kubectl apply -f k8s/monitoring/prometheus-deployment.yaml -n monitoring
+    ```
+3.  Despliega Grafana:
+    ```bash
+    kubectl apply -f k8s/monitoring/grafana-deployment.yaml -n monitoring
+    ```
+4.  Espera a que Grafana esté listo:
+    ```bash
+    kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=120s
+    ```
+5.  Accede a Grafana:
+    ```bash
+    kubectl port-forward svc/grafana 3000:3000 -n monitoring
+    ```
+    * La UI de Grafana estará disponible en `http://localhost:3000`.
+    * **Usuario:** admin, **Contraseña:** admin
+
+### 5. Despliegue con GitOps y ArgoCD
+
+**Prerrequisitos:**
+* Clúster de Kubernetes.
+* Repositorio de Git con tu código de aplicación y manifiestos de Kubernetes.
+
+**Instalar ArgoCD:**
+
+1.  Crea el namespace de ArgoCD:
+    ```bash
+    kubectl create namespace argocd
+    ```
+2.  Instala ArgoCD:
+    ```bash
+    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    ```
+3.  Espera a que ArgoCD esté listo:
+    ```bash
+    kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=argocd-server -n argocd --timeout=300s
+    ```
+4.  Accede a la UI de ArgoCD:
+    ```bash
+    kubectl port-forward svc/argocd-server -n argocd 8080:443
+    ```
+5.  Obtén la contraseña inicial de administrador:
+    ```bash
+    kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+    ```
+
+**Desplegar la Aplicación con ArgoCD:**
+
+1.  Aplica el manifiesto de la aplicación de ArgoCD:
+    ```bash
+    kubectl apply -f argocd/application.yaml
+    ```
+2.  Verifica el estado de la aplicación:
+    ```bash
+    kubectl get applications -n argocd
+    ```
+
+**Usando la UI de ArgoCD:**
+* Accede a la UI de ArgoCD en `https://localhost:8080`.
+* Inicia sesión con el usuario `admin` y la contraseña obtenida anteriormente.
+* Deberías ver tu aplicación en el panel de control.
+* Haz clic en la aplicación para ver los detalles del despliegue.
+* Usa el botón "Sync" para activar manualmente un despliegue si es necesario.
+
+---
+
+## Configuración del Pipeline de CI/CD (Azure DevOps)
+
+**Prerrequisitos:**
+* Cuenta de Azure DevOps.
+* Azure Container Registry.
+* Conexión de servicio a tus recursos de Azure.
+
+**Configurar el Pipeline:**
+
+1.  Importa tu repositorio a Azure DevOps.
+2.  Crea un nuevo pipeline usando el archivo existente `azure-pipelines.yml`.
+3.  Configura las siguientes variables:
+    * `pythonVersion`: Versión de Python a usar (ej., `'3.12'`).
+    * `image_repository`: Nombre del repositorio de tu imagen de contenedor.
+    * `acrName`: Nombre de tu Azure Container Registry.
+4.  Ejecuta el pipeline.
+
+El pipeline realizará las siguientes acciones:
+* Validará el código con pruebas y escaneos de seguridad.
+* Construirá y subirá la imagen de Docker.
+* Escaneará la imagen del contenedor en busca de vulnerabilidades.
+* Ejecutará pruebas de seguridad DAST.
+* Actualizará los manifiestos de Kubernetes con la nueva etiqueta de la imagen.
+* Confirmará los cambios para activar el despliegue de ArgoCD.
+
+---
+
+## Características de Seguridad
+
+* Escaneo SAST con **Bandit**.
+* Escaneo SCA con **OSV Scanner**.
+* Escaneo de contenedores con **Trivy**.
+* Escaneo DAST con **OWASP ZAP**.
+* Usuario no-root en el contenedor Docker.
+* Contexto de seguridad en el despliegue de Kubernetes.
+* Límites de recursos en el despliegue de Kubernetes.
+* Encabezados de seguridad para vulnerabilidades web.
+
+---
+
+## Observabilidad
+
+* Registro de JSON estructurado.
+* Métricas de Prometheus.
+* Endpoint de verificación de estado.
+* Sondas de `liveness` y `readiness` de Kubernetes.
+* Paneles de Grafana para visualización.
+
+---
+
+## Solución de Problemas
+
+**Problemas Comunes:**
+
+* **La API no es accesible después del despliegue:**
+    * Verifica el estado del pod: `kubectl get pods -n experimental-api`
+    * Verifica los registros: `kubectl logs -l app=experimental-api -n experimental-api`
+    * Verifica el servicio: `kubectl get svc -n experimental-api`
+
+* **ArgoCD no se sincroniza:**
+    * Verifica el estado de la aplicación: `kubectl get applications -n argocd`
+    * Ve el estado detallado: `kubectl describe application experimental-api -n argocd`
+    * Verifica los registros de ArgoCD: `kubectl logs -l app.kubernetes.io/name=argocd-server -n argocd`
+
+* **Prometheus no recopila métricas:**
+    * Verifica la configuración del objetivo: `kubectl get configmap prometheus-config -n monitoring -o yaml`
+    * Verifica si la API está exponiendo métricas: `curl http://localhost:8000/metrics`
+    * Asegúrate de que el servicio tenga las anotaciones correctas: `prometheus.io/scrape: "true"`
+
+---
+
+## Contribuciones
+
+1.  Haz un fork del repositorio.
+2.  Crea una rama de funcionalidad: `git checkout -b feature/tu-funcionalidad`
+3.  Confirma tus cambios: `git commit -am 'Añade tu funcionalidad'`
+4.  Sube a la rama: `git push origin feature/tu-funcionalidad`
+5.  Envía una pull request.
