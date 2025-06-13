@@ -21,7 +21,7 @@ Este proyecto implementa una API simple de lista de tareas (To-Do List) con las 
 
 ## Diagrama de arquitectura DevSecOps
 
-![alt text](image-2.png)
+![alt text](diagrama-de-arquitectura.png)
 
 ## Estructura del Repositorio
 
