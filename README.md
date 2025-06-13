@@ -67,7 +67,7 @@ api-experimental-prototype/
 ### 1. Desarrollo Local
 
 **Prerrequisitos:**
-* Python 3.11+
+* Python 3.12+
 * Docker
 
 **Configuración:**
@@ -82,7 +82,7 @@ api-experimental-prototype/
     ```bash
     python -m venv venv
     source venv/bin/activate  # En Windows: venv\Scripts\activate
-    pip install -r requirements.txt
+    pip3 install -r requirements.txt
     ```
 
 3.  Ejecuta la aplicación:
