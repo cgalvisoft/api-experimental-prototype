@@ -5,7 +5,7 @@ metadata:
   labels:
     app: experimental-api
 spec:
-  replicas: 1  # Reducido a 1 para entornos locales
+  replicas: 1
   selector:
     matchLabels:
       app: experimental-api
@@ -25,8 +25,8 @@ spec:
     spec:
       containers:
       - name: experimental-api
-        image: experimental-api:latest  # Imagen local
-        imagePullPolicy: IfNotPresent   # Usar imagen local si está disponible
+        image: experimental-api:latest
+        imagePullPolicy: IfNotPresent
         ports:
         - containerPort: 8000
         resources:

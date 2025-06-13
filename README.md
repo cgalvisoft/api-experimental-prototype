@@ -71,7 +71,7 @@ api-experimental-prototype/
 ### 1. Desarrollo Local
 
 **Prerrequisitos:**
-* Python 3.12+
+* Python 3.11+
 * Docker
 
 **Configuración:**

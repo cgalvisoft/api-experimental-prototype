@@ -52,5 +52,5 @@ venv.bak/
 
 # Security reports
 bandit-results.json
-osv-results.json
+osv-scanner-results.json
 trivy-results.json
