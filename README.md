@@ -306,3 +306,32 @@ El pipeline realizará las siguientes acciones:
 3.  Confirma tus cambios: `git commit -am 'Añade tu funcionalidad'`
 4.  Sube a la rama: `git push origin feature/tu-funcionalidad`
 5.  Envía una pull request.
+
+
+## Decisiones Técnicas y Selección de Herramientas
+
+A continuación, se detallan las decisiones clave sobre la tecnología y las herramientas utilizadas en este proyecto, explicando el razonamiento detrás de cada elección.
+
+* **Lenguaje de Programación: Python**
+    * **Justificación:** Se optó por Python debido a su ecosistema maduro para el desarrollo de APIs REST, permitiendo una implementación rápida y limpia mediante frameworks como FastAPI. Su sintaxis clara facilita la mantenibilidad del código a largo plazo.
+
+* **CI/CD: Azure DevOps**
+    * **Justificación:** Se seleccionó Azure DevOps por ser una plataforma integral que centraliza el ciclo de vida del desarrollo de software. Provee un conjunto de herramientas robusto para la automatización de pipelines de CI/CD de forma eficiente y escalable.
+
+* **Análisis Estático de Seguridad (SAST): Bandit**
+    * **Justificación:** La elección de Bandit responde al objetivo de integrar una herramienta de seguridad especializada en la detección de vulnerabilidades comunes en código Python, diversificando el stack de seguridad más allá de soluciones tradicionales.
+
+* **Análisis de Dependencias (SCA) y Escaneo de Imágenes: OSV-Scanner y Trivy**
+    * **Justificación:** Se adoptó una estrategia de seguridad por capas: **OSV-Scanner** se utiliza para el análisis de dependencias (SCA) gracias a su simplicidad y fácil integración, mientras que **Trivy** se reserva para el escaneo de la imagen Docker, donde es altamente eficaz.
+
+* **Contenerización: Docker**
+    * **Justificación:** El uso de un `Dockerfile` es el estándar de la industria para la construcción de imágenes de contenedores. Este enfoque garantiza un empaquetado reproducible, inmutable y portátil de la aplicación.
+
+* **Entorno de Kubernetes Local: Minikube**
+    * **Justificación:** Se utiliza Minikube por su capacidad para emular un clúster de Kubernetes de un solo nodo de manera local. Esto es fundamental para desarrollar y validar los manifiestos de la aplicación en un entorno que refleja fielmente la producción.
+
+* **Entrega Continua (GitOps): ArgoCD**
+    * **Justificación:** Se implementa ArgoCD para adoptar una estrategia de GitOps. Esta herramienta permite gestionar los despliegues de forma declarativa, utilizando el repositorio de Git como la única fuente de la verdad para el estado deseado de la aplicación.
+
+* **Monitoreo y Observabilidad: Prometheus y Grafana**
+    * **Justificación:** Se incorpora una pila de monitoreo con Prometheus para la recolección de métricas y Grafana para su visualización. Estas herramientas son estándares de facto en la industria y son cruciales para construir una arquitectura con alta observabilidad, orientada a la operación y al mantenimiento proactivo.
