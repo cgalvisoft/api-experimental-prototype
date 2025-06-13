@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: experimental-api
+  labels:
+    app: experimental-api
+spec:
+  type: NodePort  # Cambiado a NodePort para acceso desde fuera de Minikube
+  ports:
+  - port: 80
+    targetPort: 8000
+    nodePort: 30080  # Puerto fijo para acceder desde el host
+    protocol: TCP
+    name: http
+  selector:
+    app: experimental-api
