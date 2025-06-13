@@ -6,6 +6,3 @@ pytest==7.4.3
 pytest-cov==4.1.0
 httpx==0.26.0
 bandit==1.7.5
-# Dependencias vulnerables para demostración de escaneo de seguridad SCA
-flask==2.0.1
-requests==2.25.0
