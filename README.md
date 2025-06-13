@@ -28,6 +28,8 @@ api-experimental-prototype/
 │   ├── main.py           # Punto de entrada de la aplicación FastAPI
 │   └── models.py         # Modelos de datos
 ├── tests/                # Suite de pruebas
+│   ├── __init__.py           
+│   └── test_main.py                  
 ├── k8s/                  # Manifiestos de Kubernetes
 │   ├── deployment.yaml
 │   ├── service.yaml
@@ -40,7 +42,7 @@ api-experimental-prototype/
 │   └── application.yaml
 ├── Dockerfile            # Construcción de Docker en múltiples etapas
 ├── requirements.txt      # Dependencias de Python
-├── openapi.json          # Especificación de la API
+├── openapi.json          # Especificación de la API para escaneo DAST
 └── azure-pipelines.yml   # Configuración del pipeline de CI/CD
 ```
 
