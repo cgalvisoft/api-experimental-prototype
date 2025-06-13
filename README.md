@@ -177,7 +177,19 @@ docker run -p 8000:8000 experimental-api:latest
     ```bash
     kubectl wait --for=condition=ready pod -l app=grafana -n monitoring --timeout=120s
     ```
-5.  Accede a Grafana:
+5.  Configurar Prometheus como fuente de datos en Grafana
+    ```bash
+    kubectl exec -it $(kubectl get pods -n monitoring -l app=grafana -o jsonpath='{.items[0].metadata.name}') -n monitoring -- \
+    curl -s -X POST -H "Content-Type: application/json" -d '{"name":"prometheus","type":"prometheus","url":"http://prometheus:9090","access":"proxy","isDefault":true}' \
+    http://admin:admin@localhost:3000/api/datasources
+    ```
+6.  Accede a Prometheus:
+    ```bash
+    kubectl port-forward svc/prometheus 9090:9090 -n monitoring
+    ```
+    * La UI de Prometheus estará disponible en `http://localhost:9090`.
+
+7.  Accede a Grafana:
     ```bash
     kubectl port-forward svc/grafana 3000:3000 -n monitoring
     ```
